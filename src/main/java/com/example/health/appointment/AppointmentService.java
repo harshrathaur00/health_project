@@ -15,7 +15,7 @@ public class AppointmentService {
 	@Autowired
 	private AppointmentRepository appointmentRepository;
 	
-	public List<Appointment> getDocotorAppointments(String doctorid,Timestamp from,Timestamp to) {
+	public List<Appointment> getDoctorAppointments(String doctorid,Timestamp from,Timestamp to) {
 		List<Appointment> appointments=new ArrayList<>();
 		appointmentRepository.findDoctorAppointments(doctorid,from,to)
 		.forEach(appointments::add);
@@ -35,19 +35,19 @@ public class AppointmentService {
 		return apt.get();
 	}
 	
-	public void addAppointment(Appointment apt) {
+	public Appointment addAppointment(Appointment apt) {
 		apt.setStatus(Appointment.Status.Requested);
 		apt.setCreatedAt(new Timestamp(System.currentTimeMillis()));
 		apt.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-		appointmentRepository.save(apt);
+		return appointmentRepository.save(apt);
 	}
 	
-	public Appointment setAppointmentSlot(Timestamp from, Timestamp to, Long id) {
+	public Appointment setAppointmentSlot(Timestamp from, Timestamp to, Long id) throws Exception {
 		//System.out.println(from+" "+to);
 		//appointmentRepository.setSlot(from,to,id);
 		Optional<Appointment> aptOp=appointmentRepository.findById(id);
 		Appointment apt=aptOp.get();
-		
+		if(apt==null) throw new Exception("Not Found");
 		apt.setFromTime(from);
 		apt.setToTime(to);
 		apt.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
@@ -60,7 +60,7 @@ public class AppointmentService {
 	public Appointment cancelAppointment(Long appointment_id) throws Exception {
 		Optional<Appointment> aptOp=appointmentRepository.findById(appointment_id);
 		Appointment apt=aptOp.get();
-		//if(apt==null) throw new Exception("Not Found");
+		if(apt==null) throw new Exception("Not Found");
 		apt.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 		apt.setStatus(Appointment.Status.Cancelled);
 		appointmentRepository.save(apt);
